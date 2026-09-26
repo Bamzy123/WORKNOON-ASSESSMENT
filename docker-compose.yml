@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    ports: ["8000:8000"]
+    environment:
+      PORT: 8000
+      DATABASE_PATH: /app/data/refunds.db
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini}
+    volumes:
+      - refund_data:/app/data
+  frontend:
+    build: ./frontend
+    ports: ["3000:5173"]
+    environment:
+      VITE_API_URL: http://localhost:8000
+    depends_on: [backend]
+volumes:
+  refund_data:
