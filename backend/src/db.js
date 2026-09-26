@@ -6,6 +6,7 @@ const dbPath = process.env.DATABASE_PATH || "./data/refunds.db";
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 export const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
+db.pragma("foreign_keys = ON");
 
 export function initDatabase() {
   db.exec(`
@@ -37,6 +38,10 @@ export function initDatabase() {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY(order_id) REFERENCES orders(id)
     );
+    CREATE INDEX IF NOT EXISTS idx_refund_requests_created_at
+      ON refund_requests(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_refund_requests_order_id
+      ON refund_requests(order_id);
   `);
 }
 

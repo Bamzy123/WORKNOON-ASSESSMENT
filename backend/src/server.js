@@ -27,17 +27,22 @@ app.post("/api/refunds", async (req,res)=>{
   if(typeof order_number!=="string" || typeof message!=="string" || message.trim().length<5 || message.length>2000)
     return res.status(400).json({error:"A valid order_number and message (5–2000 characters) are required."});
 
+  const normalizedOrderNumber=order_number.trim().toUpperCase();
+  const normalizedMessage=message.trim();
+  if (!normalizedOrderNumber)
+    return res.status(400).json({error:"A valid order_number is required."});
+
   const order=db.prepare(`SELECT o.*,c.name customer FROM orders o JOIN customers c ON c.id=o.customer_id
-                          WHERE o.order_number=?`).get(order_number.toUpperCase());
+                          WHERE o.order_number=?`).get(normalizedOrderNumber);
   if(!order) return res.status(404).json({error:"Order not found"});
 
-  const injection=detectPromptInjection(message);
-  const ai=await analyzeRequest(message);
+  const injection=detectPromptInjection(normalizedMessage);
+  const ai=await analyzeRequest(normalizedMessage);
   const policy=evaluatePolicy(order,ai.classification,injection);
 
   const result=db.prepare(`INSERT INTO refund_requests
     (order_id,customer_message,classification,decision,reason_code,policy_reason,ai_summary,injection_flag)
-    VALUES (?,?,?,?,?,?,?,?)`).run(order.id,message,ai.classification,policy.decision,policy.reasonCode,policy.reason,ai.summary,injection?1:0);
+    VALUES (?,?,?,?,?,?,?,?)`).run(order.id,normalizedMessage,ai.classification,policy.decision,policy.reasonCode,policy.reason,ai.summary,injection?1:0);
 
   res.status(201).json({
     request_id:result.lastInsertRowid, decision:policy.decision, reason_code:policy.reasonCode,
@@ -60,6 +65,11 @@ app.get("/api/admin/stats",(_,res)=>{
   res.json(out);
 });
 
-app.use((err,req,res,next)=>{console.error(err);res.status(500).json({error:"Internal server error"});});
+app.use((err,req,res,next)=>{
+  if (err instanceof SyntaxError && "body" in err)
+    return res.status(400).json({error:"Request body must be valid JSON."});
+  console.error(err);
+  res.status(500).json({error:"Internal server error"});
+});
 const port=process.env.PORT || 8000;
 app.listen(port,"0.0.0.0",()=>console.log(`API listening on ${port}`));

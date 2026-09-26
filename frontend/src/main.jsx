@@ -90,8 +90,19 @@ function Admin() {
   const [rows, setRows] = useState([]),
     [stats, setStats] = useState({});
   async function load() {
-    setRows(await (await fetch(API + "/api/admin/refunds")).json());
-    setStats(await (await fetch(API + "/api/admin/stats")).json());
+    try {
+      const [refundsResponse, statsResponse] = await Promise.all([
+        fetch(API + "/api/admin/refunds"),
+        fetch(API + "/api/admin/stats"),
+      ]);
+      if (!refundsResponse.ok || !statsResponse.ok)
+        throw Error("Unable to load the dashboard.");
+      setRows(await refundsResponse.json());
+      setStats(await statsResponse.json());
+    } catch {
+      setRows([]);
+      setStats({});
+    }
   }
   useEffect(() => {
     load();
@@ -112,7 +123,7 @@ function Admin() {
       </div>
       <div className="stats">
         {["total", "approved", "denied", "escalated"].map((k) => (
-          <div className="stat">
+          <div className="stat" key={k}>
             <span>{k}</span>
             <strong>{stats[k] || 0}</strong>
           </div>
@@ -133,7 +144,7 @@ function Admin() {
           <tbody>
             {rows.length ? (
               rows.map((r) => (
-                <tr>
+                <tr key={r.id}>
                   <td>#{r.id}</td>
                   <td>
                     <b>{r.customer}</b>
