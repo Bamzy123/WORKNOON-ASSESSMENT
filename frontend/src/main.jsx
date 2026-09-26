@@ -7,8 +7,8 @@ import {
   Send,
   ShieldCheck,
 } from "lucide-react";
+import { getDashboardData, submitRefund } from "./api.js";
 import "./styles.css";
-const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 function Customer() {
   const [order, setOrder] = useState("ORD-1001"),
     [message, setMessage] = useState(
@@ -23,14 +23,7 @@ function Customer() {
     setError("");
     setData(null);
     try {
-      const r = await fetch(API + "/api/refunds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_number: order, message }),
-      });
-      const j = await r.json();
-      if (!r.ok) throw Error(j.error || "Request failed");
-      setData(j);
+      setData(await submitRefund(order, message));
     } catch (e) {
       setError(e.message);
     } finally {
@@ -45,7 +38,7 @@ function Customer() {
         </span>
         <h1>Refunds, without the runaround.</h1>
         <p>
-          Tell us what happened. We’ll check your order against policy and give
+          Tell us what happened. We'll check your order against policy and give
           you a clear next step.
         </p>
       </section>
@@ -91,14 +84,9 @@ function Admin() {
     [stats, setStats] = useState({});
   async function load() {
     try {
-      const [refundsResponse, statsResponse] = await Promise.all([
-        fetch(API + "/api/admin/refunds"),
-        fetch(API + "/api/admin/stats"),
-      ]);
-      if (!refundsResponse.ok || !statsResponse.ok)
-        throw Error("Unable to load the dashboard.");
-      setRows(await refundsResponse.json());
-      setStats(await statsResponse.json());
+      const [refunds, dashboardStats] = await getDashboardData();
+      setRows(refunds);
+      setStats(dashboardStats);
     } catch {
       setRows([]);
       setStats({});
@@ -165,7 +153,7 @@ function Admin() {
                     {r.injection_flag && (
                       <>
                         <br />
-                        <b>⚠ Injection flag</b>
+                        <b>Injection flag</b>
                       </>
                     )}
                   </td>

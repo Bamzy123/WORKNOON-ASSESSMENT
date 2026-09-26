@@ -250,7 +250,7 @@ worknoon-ai-refund-express/
 ├── policy/
 │   └── refund_policy.md
 ├── docker-compose.yml
-├── .env.example
+├── .env
 ├── .gitignore
 ├── DEMO_EXAMPLES.md
 └── README.md
