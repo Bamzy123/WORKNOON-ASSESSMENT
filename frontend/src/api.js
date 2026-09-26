@@ -16,9 +16,11 @@ export function submitRefund(orderNumber, message) {
   });
 }
 
-export function getDashboardData() {
+export function getDashboardData(username, password) {
+  const authorization = `Basic ${btoa(`${username}:${password}`)}`;
+
   return Promise.all([
-    request("/api/admin/refunds"),
-    request("/api/admin/stats"),
+    request("/api/admin/refunds", { headers: { Authorization: authorization } }),
+    request("/api/admin/stats", { headers: { Authorization: authorization } }),
   ]);
 }

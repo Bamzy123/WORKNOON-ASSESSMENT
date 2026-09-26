@@ -183,6 +183,10 @@ textarea:focus {
   justify-content: space-between;
   align-items: end;
 }
+.adminActions {
+  display: flex;
+  gap: 8px;
+}
 .secondary {
   background: #fff;
   border: 1px solid #ddd;

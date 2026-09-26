@@ -1,4 +1,5 @@
 import cors from "cors";
+import { timingSafeEqual } from "node:crypto";
 import express from "express";
 import helmet from "helmet";
 import { analyzeRequest } from "./ai.js";
@@ -6,7 +7,35 @@ import { db } from "./db.js";
 import { evaluatePolicy } from "./policy.js";
 import { detectPromptInjection } from "./security.js";
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:5173"];
+const localOrigins = ["http://localhost:3000", "http://localhost:5173"];
+const configuredOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowedOrigins = [...localOrigins, ...configuredOrigins];
+
+function hasValidAdminCredentials(authorizationHeader) {
+  const expectedUsername = process.env.ADMIN_USERNAME;
+  const expectedPassword = process.env.ADMIN_PASSWORD;
+
+  if (!expectedUsername || !expectedPassword || !authorizationHeader?.startsWith("Basic ")) {
+    return false;
+  }
+
+  const providedCredentials = Buffer.from(authorizationHeader.slice(6), "base64").toString("utf8");
+  const expectedCredentials = `${expectedUsername}:${expectedPassword}`;
+  const providedBuffer = Buffer.from(providedCredentials);
+  const expectedBuffer = Buffer.from(expectedCredentials);
+
+  return providedBuffer.length === expectedBuffer.length && timingSafeEqual(providedBuffer, expectedBuffer);
+}
+
+function requireAdminAuthentication(request, response, next) {
+  if (hasValidAdminCredentials(request.get("authorization"))) return next();
+
+  response.set("WWW-Authenticate", 'Basic realm="Worknoon Admin"');
+  return response.status(401).json({ error: "Admin authentication is required." });
+}
 
 function findOrder(orderNumber) {
   return db.prepare(`SELECT o.*, c.name AS customer FROM orders o JOIN customers c ON c.id = o.customer_id WHERE o.order_number = ?`).get(orderNumber);
@@ -75,13 +104,13 @@ export function createApp() {
     }
   });
 
-  app.get("/api/admin/refunds", (_request, response) => {
+  app.get("/api/admin/refunds", requireAdminAuthentication, (_request, response) => {
     const refunds = db.prepare(`SELECT r.*, o.order_number, o.item_name AS item, o.amount, c.name AS customer FROM refund_requests r JOIN orders o ON o.id = r.order_id JOIN customers c ON c.id = o.customer_id ORDER BY r.id DESC`).all()
       .map((refund) => ({ ...refund, injection_flag: Boolean(refund.injection_flag) }));
     response.json(refunds);
   });
 
-  app.get("/api/admin/stats", (_request, response) => {
+  app.get("/api/admin/stats", requireAdminAuthentication, (_request, response) => {
     const totals = { total: 0, approved: 0, denied: 0, escalated: 0 };
     const decisions = db.prepare("SELECT decision, COUNT(*) AS count FROM refund_requests GROUP BY decision").all();
     for (const { decision, count } of decisions) {
