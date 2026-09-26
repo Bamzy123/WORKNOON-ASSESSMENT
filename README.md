@@ -58,9 +58,7 @@ OPENAI_API_KEY=your_real_key_here
 OPENAI_MODEL=gpt-5-mini
 ```
 
-Do **not** commit `.env` to GitHub.
-
-The application can still run without a key by using its local fallback classifier, but use a valid API key during your assessment demo to demonstrate the live AI integration.
+The application can still run without a key by using its local fallback classifier.
 
 ### 4. Run the complete stack
 
@@ -226,78 +224,4 @@ The assessment explicitly permits Node.js/Express. Express keeps the API layer s
 
 SQLite keeps the assessment self-contained and allows the evaluator to start the entire environment with one command. For a production multi-instance service, PostgreSQL would be a natural migration.
 
-## Repository structure
-
-```text
-worknoon-ai-refund-express/
-├── backend/
-│   ├── src/
-│   │   ├── server.js
-│   │   ├── db.js
-│   │   ├── ai.js
-│   │   ├── policy.js
-│   │   └── security.js
-│   ├── test/
-│   │   └── policy.test.js
-│   ├── package.json
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── main.jsx
-│   │   └── styles.css
-│   ├── package.json
-│   └── Dockerfile
-├── policy/
-│   └── refund_policy.md
-├── docker-compose.yml
-├── .env
-├── .gitignore
-├── DEMO_EXAMPLES.md
-└── README.md
-```
-
-## Before submitting
-
-1. Create your own public GitHub repository.
-2. Push these project files.
-3. Make sure `.env` is not committed.
-4. Test from a clean checkout with `docker compose up --build`.
-5. Run `docker compose exec backend npm test`.
-6. Demonstrate at least Approved, Denied, Escalated and prompt-injection scenarios.
-7. Review every major file so you can explain your decisions in the live technical review.
-
-## Suggested video walkthrough
-
-**0:00-0:30 - Introduction**  
-"This is my AI-powered refund support system built with React, Express.js, SQLite, OpenAI and Docker Compose."
-
-**0:30-1:10 - Architecture**  
-Show the folders. Explain that AI understands customer language while deterministic application code owns policy decisions.
-
-**1:10–2:00 — Approved request**  
-Use `ORD-1001` with the damaged-headphones example.
-
-**2:00–2:30 — Human escalation**  
-Use `ORD-1002` and explain the $500 threshold.
-
-**2:30–3:10 — Prompt-injection defense**  
-Use the injection example. Show that it escalates instead of obeying the customer instruction.
-
-**3:10–3:50 — Admin dashboard**  
-Show decisions and audit reasoning.
-
-**3:50–4:20 — Code/tests/Docker**  
-Show `policy.js`, `ai.js`, `docker-compose.yml`, and run the tests.
-
-**4:20–4:40 — Closing**  
 Explain the central engineering decision: “The LLM handles semantic understanding, but deterministic code remains authoritative for policy enforcement.”
-
-## Key interview answer
-
-If asked why the AI does not make the final decision:
-
-> LLMs are useful for understanding unstructured language, but refund policy is a business control. I kept the model advisory and made deterministic application logic authoritative. This reduces hallucination risk, makes decisions auditable, and ensures prompt-injection attempts cannot override policy.
-
----
-
-Synthetic assessment data only. This is not a real payment/refund processor.
