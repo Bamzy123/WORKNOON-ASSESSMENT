@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { getDashboardData, submitRefund } from "./api.js";
 import "./styles.css";
+
+
 function Customer() {
   const [order, setOrder] = useState("ORD-1001"),
     [message, setMessage] = useState(
@@ -30,6 +32,8 @@ function Customer() {
       setLoading(false);
     }
   }
+
+
   return (
     <main className="customer">
       <section className="hero">
@@ -79,6 +83,8 @@ function Customer() {
     </main>
   );
 }
+
+
 function Admin() {
   const [rows, setRows] = useState([]),
     [stats, setStats] = useState({});
@@ -95,6 +101,8 @@ function Admin() {
   useEffect(() => {
     load();
   }, []);
+
+
   return (
     <main>
       <div className="adminHead">
@@ -170,8 +178,12 @@ function Admin() {
     </main>
   );
 }
+
+
 function App() {
   const [p, setP] = useState("customer");
+
+  
   return (
     <>
       <header>

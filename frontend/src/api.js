@@ -4,10 +4,7 @@ async function request(path, options) {
   const response = await fetch(`${apiUrl}${path}`, options);
   const payload = await response.json();
 
-  if (!response.ok) {
-    throw new Error(payload.error || "Something went wrong. Please try again.");
-  }
-
+  if (!response.ok) throw new Error(payload.error || "Something went wrong. Please try again.");
   return payload;
 }
 
