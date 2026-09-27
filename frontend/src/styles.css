@@ -106,6 +106,33 @@ textarea:focus {
   border-color: #6366f1;
   box-shadow: 0 0 0 3px #eef2ff;
 }
+.password-input {
+  position: relative;
+  margin-bottom: 20px;
+}
+.password-input input {
+  margin-bottom: 0;
+  padding-right: 46px;
+}
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #667085;
+}
+.password-toggle:hover {
+  background: #f2f4f7;
+  color: #344054;
+}
 .card > button {
   width: 100%;
   border: 0;

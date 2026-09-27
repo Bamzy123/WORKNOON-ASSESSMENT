@@ -69,6 +69,10 @@ export function createApp() {
 
   app.get("/health", (_request, response) => response.json({ status: "ok" }));
 
+  app.get("/api/admin/session", requireAdminAuthentication, (_request, response) => {
+    response.json({ authenticated: true });
+  });
+
   app.get("/api/orders/:orderNumber", (request, response) => {
     const order = findOrder(request.params.orderNumber.trim().toUpperCase());
     if (!order) return response.status(404).json({ error: "Order not found" });

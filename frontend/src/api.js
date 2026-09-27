@@ -17,10 +17,21 @@ export function submitRefund(orderNumber, message) {
 }
 
 export function getDashboardData(username, password) {
-  const authorization = `Basic ${btoa(`${username}:${password}`)}`;
+  const authorization = createAdminAuthorization(username, password);
 
   return Promise.all([
     request("/api/admin/refunds", { headers: { Authorization: authorization } }),
     request("/api/admin/stats", { headers: { Authorization: authorization } }),
   ]);
+}
+
+function createAdminAuthorization(username, password) {
+  const credentials = new TextEncoder().encode(`${username}:${password}`);
+  return `Basic ${btoa(String.fromCharCode(...credentials))}`;
+}
+
+export function authenticateAdmin(username, password) {
+  return request("/api/admin/session", {
+    headers: { Authorization: createAdminAuthorization(username, password) },
+  });
 }
