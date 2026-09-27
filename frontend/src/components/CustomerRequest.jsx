@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bot, Send } from "lucide-react";
+import { LoaderCircle, Send } from "lucide-react";
 import { submitRefund } from "../api.js";
 
 function RefundResult({ result }) {
@@ -10,11 +10,11 @@ function RefundResult({ result }) {
       <b>{result.reason_code.replaceAll("_", " ")}</b>
       <p>{result.policy_reason}</p>
       <div className="audit">
-        <b>AI classification:</b> {result.classification}
+        <b>Request category:</b> {result.classification.replaceAll("_", " ")}
         <br />
-        <b>AI source:</b> {result.ai_source}
+        <b>Assessment source:</b> {result.ai_source}
         <br />
-        <b>AI note:</b> {result.ai_summary}
+        <b>Support note:</b> {result.ai_summary}
         <br />
         <b>Injection flag:</b>{" "}
         {result.injection_flag ? "Yes - human review" : "No"}
@@ -49,13 +49,9 @@ export default function CustomerRequest() {
   return (
     <main className="customer">
       <section className="hero">
-        <span className="pill">
-          <Bot size={16} /> AI-assisted support
-        </span>
-        <h1>Refunds, without the runaround.</h1>
+        <h1>Submit a refund request</h1>
         <p>
-          Tell us what happened. We'll check your order against policy and give
-          you a clear next step.
+          Tell us what happened and we will check your order against the refund policy.
         </p>
       </section>
       <form className="card" onSubmit={handleSubmit}>
@@ -73,7 +69,7 @@ export default function CustomerRequest() {
           onChange={(event) => setMessage(event.target.value)}
         />
         <button disabled={isSubmitting}>
-          <Send size={17} />
+          {isSubmitting ? <LoaderCircle className="spinner" size={17} /> : <Send size={17} />}
           {isSubmitting ? "Checking..." : "Check refund eligibility"}
         </button>
         <small>Demo orders: ORD-1001 to ORD-1015</small>

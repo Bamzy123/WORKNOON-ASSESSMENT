@@ -1,22 +1,33 @@
 import { useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { LoaderCircle, LogIn } from "lucide-react";
+import { authenticateAdmin } from "../api.js";
 
 export default function AdminLogin({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  function handleSubmit(event) {
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event) {
     event.preventDefault();
-    onLogin({ username, password });
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      await authenticateAdmin(username, password);
+      onLogin({ username, password });
+    } catch (requestError) {
+      setError("The username or password is incorrect.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <main className="customer">
       <section className="hero">
-        <span className="pill">
-          <ShieldCheck size={16} /> Restricted area
-        </span>
         <h1>Admin sign in</h1>
-        <p>Enter the credentials configured for this demo environment.</p>
+        <p>Enter your support-team credentials to review refund requests.</p>
       </section>
       <form className="card" onSubmit={handleSubmit}>
         <label htmlFor="admin-username">Username</label>
@@ -24,6 +35,7 @@ export default function AdminLogin({ onLogin }) {
           id="admin-username"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
+          autoComplete="username"
           required
         />
         <label htmlFor="admin-password">Password</label>
@@ -32,10 +44,13 @@ export default function AdminLogin({ onLogin }) {
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
+          autoComplete="current-password"
           required
         />
-        <button>
-          <ShieldCheck size={17} /> Open admin dashboard
+        {error && <p className="error" role="alert">{error}</p>}
+        <button disabled={isSubmitting}>
+          {isSubmitting ? <LoaderCircle className="spinner" size={17} /> : <LogIn size={17} />}
+          {isSubmitting ? "Signing in..." : "Sign in"}
         </button>
       </form>
     </main>
